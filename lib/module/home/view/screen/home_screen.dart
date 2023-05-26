@@ -17,7 +17,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   ScrollController listController = ScrollController();
-
+  BuildContext? dialogContext;
   // CONTROLLER LISTENER
   controllerListener() async {
     listController.addListener(() {
@@ -41,10 +41,17 @@ class _HomeScreenState extends State<HomeScreen> {
       if (event == NetworkConnectionState.disconnected) {
         await showDialog(
           context: context,
-          builder: (context) => NoInternetConnectionDialog(
-            event: event,
-          ),
+          builder: (context) {
+            dialogContext = context;
+            return NoInternetConnectionDialog(
+              event: event,
+            );
+          },
         );
+      } else {
+        if (dialogContext != null) {
+          Navigator.of(dialogContext!).pop();
+        }
       }
     });
     super.initState();

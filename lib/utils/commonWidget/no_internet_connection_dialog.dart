@@ -16,11 +16,6 @@ class _NoInternetConnectionDialogState
     extends State<NoInternetConnectionDialog> {
   @override
   void initState() {
-    kNetworkController.connectionState.listen((event) async {
-      if (event == NetworkConnectionState.connected) {
-        Navigator.pop(context);
-      }
-    });
     super.initState();
   }
 
