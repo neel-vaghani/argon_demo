@@ -1,5 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:developer';
+
 import 'package:argon_demo/core/dbService/db.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -26,6 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
     listController.addListener(() async {
       if (listController.position.maxScrollExtent ==
           listController.position.pixels) {
+        log(1.toString());
         await kHomeController.getRepoData(
           dataSource: kNetworkController.connectionState.value ==
                   NetworkConnectionState.connected
@@ -42,6 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
     // CONNECTIVITY .
     kNetworkController.connectionState.listen((event) async {
       if (event == NetworkConnectionState.disconnected) {
+        log(2.toString());
         kHomeController.getRepoData(
             dataSource: event == NetworkConnectionState.connected
                 ? DataSource.api
@@ -61,6 +65,8 @@ class _HomeScreenState extends State<HomeScreen> {
       } else {
         kHomeController.repoList.clear();
         kHomeController.pageCount = 1;
+        log(3.toString());
+
         kHomeController.getRepoData(
             dataSource: event == NetworkConnectionState.connected
                 ? DataSource.api
@@ -72,15 +78,6 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       }
     });
-
-    // GET FIRST TIME DATA
-    kHomeController.getRepoData(
-        dataSource: kNetworkController.connectionState.value ==
-                NetworkConnectionState.connected
-            ? DataSource.api
-            : DataSource.dataBase,
-        context: context,
-        showMainLoader: true);
 
     // PAGINATION .
     controllerListener();

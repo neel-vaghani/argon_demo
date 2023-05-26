@@ -24,6 +24,7 @@ class HomeController extends GetxController {
     bool? showMainLoader,
     required DataSource dataSource,
   }) async {
+    log("called");
     mainLoader.value = showMainLoader ?? false;
 
     switch (dataSource) {
