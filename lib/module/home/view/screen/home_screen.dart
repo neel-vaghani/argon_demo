@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:argon_demo/core/dbService/db.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -21,10 +23,14 @@ class _HomeScreenState extends State<HomeScreen> {
   BuildContext? dialogContext;
   // CONTROLLER LISTENER
   controllerListener() async {
-    listController.addListener(() {
+    listController.addListener(() async {
       if (listController.position.maxScrollExtent ==
           listController.position.pixels) {
-        kHomeController.getRepoData(
+        await kHomeController.getRepoData(
+          dataSource: kNetworkController.connectionState.value ==
+                  NetworkConnectionState.connected
+              ? DataSource.api
+              : DataSource.dataBase,
           context: context,
         );
       }
@@ -33,13 +39,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void initState() {
-    // GET FIRST TIME DATA
-    kHomeController.getRepoData(context: context, showMainLoader: true);
-    controllerListener();
-
-    // CONNECTIVITY
+    // CONNECTIVITY .
     kNetworkController.connectionState.listen((event) async {
       if (event == NetworkConnectionState.disconnected) {
+        kHomeController.getRepoData(
+            dataSource: event == NetworkConnectionState.connected
+                ? DataSource.api
+                : DataSource.dataBase,
+            context: context,
+            showMainLoader: true);
         await showDialog(
           context: context,
           builder: (context) {
@@ -49,12 +57,33 @@ class _HomeScreenState extends State<HomeScreen> {
             );
           },
         );
+        dialogContext = null;
       } else {
+        kHomeController.repoList.clear();
+        kHomeController.pageCount = 1;
+        kHomeController.getRepoData(
+            dataSource: event == NetworkConnectionState.connected
+                ? DataSource.api
+                : DataSource.dataBase,
+            context: context,
+            showMainLoader: true);
         if (dialogContext != null) {
           Navigator.of(dialogContext!).pop();
         }
       }
     });
+
+    // GET FIRST TIME DATA
+    kHomeController.getRepoData(
+        dataSource: kNetworkController.connectionState.value ==
+                NetworkConnectionState.connected
+            ? DataSource.api
+            : DataSource.dataBase,
+        context: context,
+        showMainLoader: true);
+
+    // PAGINATION .
+    controllerListener();
     super.initState();
   }
 
@@ -64,20 +93,25 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         backgroundColor: Colors.blueGrey.shade700,
         title: const Text("Jake's Git"),
-        // actions: [
-        //   IconButton(
-        //       onPressed: () async {
-        //         await kHomeController.getRepoData(
-        //             context: context, showMainLoader: true);
-        //       },
-        //       icon: Icon(Icons.abc))
-        // ],
         actions: [
+          Center(
+              child: Obx(
+            () => Text(
+              kNetworkController.connectionState.value ==
+                      NetworkConnectionState.connected
+                  ? "Api Data"
+                  : "Database Data",
+              style: const TextStyle(
+                fontSize: 11,
+              ),
+            ),
+          )),
           IconButton(
               onPressed: () async {
-                await DB().deleteEverything();
+                await kHomeController.resetEveryThing(context);
               },
-              icon: Icon(Icons.abc))
+              // ignore: prefer_const_constructors
+              icon: Icon(Icons.refresh))
         ],
       ),
       body: Obx(
@@ -85,17 +119,19 @@ class _HomeScreenState extends State<HomeScreen> {
             ? const Center(
                 child: CupertinoActivityIndicator(),
               )
-            : ListView.builder(
-                controller: listController,
-                itemCount: kHomeController.repoList.length,
-                itemBuilder: (context, index) {
-                  GitRepoModel repoData = kHomeController.repoList[index];
-                  return RepoListTile(
-                    index: index,
-                    repoData: repoData,
-                  );
-                },
-              ),
+            : kHomeController.repoList.isEmpty
+                ? const Center(child: Text("No Data Available"))
+                : ListView.builder(
+                    controller: listController,
+                    itemCount: kHomeController.repoList.length,
+                    itemBuilder: (context, index) {
+                      GitRepoModel repoData = kHomeController.repoList[index];
+                      return RepoListTile(
+                        index: index,
+                        repoData: repoData,
+                      );
+                    },
+                  ),
       ),
     );
   }

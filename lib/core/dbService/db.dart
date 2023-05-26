@@ -58,7 +58,6 @@ class DB {
     batch.rawDelete("""DELETE FROM ${DbStringConst.REPO_TABLE_NAME}""");
 
     await batch.commit();
-    kHomeController.repoList.clear();
   }
 
   /// get batch object for this database
