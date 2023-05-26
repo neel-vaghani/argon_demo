@@ -1,6 +1,9 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../../utils/commonWidget/no_internet_connection_dialog.dart';
+import '../../../../utils/enum/common_enum.dart';
 import '../../dependencies/home_dependencies.dart';
 import '../../model/git_repo_model.dart';
 import '../widget/repo_list_tile.dart';
@@ -31,8 +34,19 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     // GET FIRST TIME DATA
     kHomeController.getRepoData(context: context, showMainLoader: true);
-
     controllerListener();
+
+    // CONNECTIVITY
+    kNetworkController.connectionState.listen((event) async {
+      if (event == NetworkConnectionState.disconnected) {
+        await showDialog(
+          context: context,
+          builder: (context) => NoInternetConnectionDialog(
+            event: event,
+          ),
+        );
+      }
+    });
     super.initState();
   }
 
@@ -52,17 +66,21 @@ class _HomeScreenState extends State<HomeScreen> {
         // ],
       ),
       body: Obx(
-        () => ListView.builder(
-          controller: listController,
-          itemCount: kHomeController.repoList.length,
-          itemBuilder: (context, index) {
-            GitRepoModel repoData = kHomeController.repoList[index];
-            return RepoListTile(
-              index: index,
-              repoData: repoData,
-            );
-          },
-        ),
+        () => kHomeController.mainLoader.value
+            ? const Center(
+                child: CupertinoActivityIndicator(),
+              )
+            : ListView.builder(
+                controller: listController,
+                itemCount: kHomeController.repoList.length,
+                itemBuilder: (context, index) {
+                  GitRepoModel repoData = kHomeController.repoList[index];
+                  return RepoListTile(
+                    index: index,
+                    repoData: repoData,
+                  );
+                },
+              ),
       ),
     );
   }
