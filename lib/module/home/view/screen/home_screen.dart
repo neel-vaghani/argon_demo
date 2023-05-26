@@ -1,9 +1,40 @@
-// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
-
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
-class HomeScreen extends StatelessWidget {
+import '../../dependencies/home_dependencies.dart';
+import '../../model/git_repo_model.dart';
+import '../widget/repo_list_tile.dart';
+
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  ScrollController listController = ScrollController();
+
+  // CONTROLLER LISTENER
+  controllerListener() async {
+    listController.addListener(() {
+      if (listController.position.maxScrollExtent ==
+          listController.position.pixels) {
+        kHomeController.getRepoData(
+          context: context,
+        );
+      }
+    });
+  }
+
+  @override
+  void initState() {
+    // GET FIRST TIME DATA
+    kHomeController.getRepoData(context: context, showMainLoader: true);
+
+    controllerListener();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -11,70 +42,26 @@ class HomeScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.blueGrey.shade700,
         title: const Text("Jake's Git"),
+        // actions: [
+        //   IconButton(
+        //       onPressed: () async {
+        //         await kHomeController.getRepoData(
+        //             context: context, showMainLoader: true);
+        //       },
+        //       icon: Icon(Icons.abc))
+        // ],
       ),
-      body: ListView.builder(
-        itemCount: 3,
-        itemBuilder: (context, index) => Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(height: 10),
-            Row(
-              children: [
-                SizedBox(width: 14),
-                const Icon(Icons.book, size: 40),
-                SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        "abs.io",
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      SizedBox(height: 5),
-                      const Text(
-                        "dssdfsfcwsf  ",
-                        style: TextStyle(fontSize: 13),
-                      ),
-                      SizedBox(height: 5),
-                      Row(
-                        children: [
-                          Icon(Icons.code, size: 15),
-                          SizedBox(width: 5),
-                          Text(
-                            "Java",
-                            style: TextStyle(fontSize: 13),
-                          ),
-                          SizedBox(width: 10),
-                          Icon(Icons.bug_report, size: 15),
-                          SizedBox(width: 5),
-                          Text(
-                            "0",
-                            style: TextStyle(fontSize: 13),
-                          ),
-                          SizedBox(width: 10),
-                          Icon(Icons.person_2, size: 15),
-                          SizedBox(width: 5),
-                          Text(
-                            "90",
-                            style: TextStyle(fontSize: 13),
-                          ),
-                          SizedBox(width: 10),
-                          Text(
-                            index.toString(),
-                            style: TextStyle(fontSize: 13),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(width: 14),
-              ],
-            ),
-            SizedBox(height: 10),
-            const Divider(height: 1)
-          ],
+      body: Obx(
+        () => ListView.builder(
+          controller: listController,
+          itemCount: kHomeController.repoList.length,
+          itemBuilder: (context, index) {
+            GitRepoModel repoData = kHomeController.repoList[index];
+            return RepoListTile(
+              index: index,
+              repoData: repoData,
+            );
+          },
         ),
       ),
     );

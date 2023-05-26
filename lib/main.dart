@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 
+import 'core/storageHelper/storage_helper.dart';
 import 'module/auth/view/screen/auth_screen.dart';
 import 'module/home/view/screen/home_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await StorageHelper.init();
   runApp(const MyApp());
 }
 
@@ -17,7 +20,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const AuthScreen(),
+      home: const HomeScreen(),
     );
   }
 }
