@@ -5,6 +5,8 @@ import 'package:dartz/dartz.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../dependencies/home_dependencies.dart';
+
 class HomeController extends GetxController {
   RxBool mainLoader = false.obs;
   RxList<GitRepoModel> repoList = <GitRepoModel>[].obs;
@@ -16,7 +18,7 @@ class HomeController extends GetxController {
   }) async {
     mainLoader.value = showMainLoader ?? false;
     Either<List<GitRepoModel>, String> result =
-        await HomeInfra.getGitRepoListFromAPI(
+        await kHomeInfra.getGitRepoListFromAPI(
       pageNo: pageCount,
     );
     result.fold((success) async {
@@ -24,9 +26,9 @@ class HomeController extends GetxController {
       // PAGE COUNT UPDATE
       await StorageHelper.setPageNumber(
         pageNumber: pageCount,
-        // STORE CURRENT PAGE DATA IN STORAGE
-        //! STATEMENT
       );
+      // STORE CURRENT PAGE DATA IN DATABASE
+      await kHomeInfra.insertDataIntoDatabase(repoList: success);
       // PAGE COUNT UPDATE
       pageCount++;
       repoList.addAll(success);

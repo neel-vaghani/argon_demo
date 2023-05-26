@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import 'core/dbService/db.dart';
 import 'core/storageHelper/storage_helper.dart';
 import 'module/auth/view/screen/auth_screen.dart';
 import 'module/home/view/screen/home_screen.dart';

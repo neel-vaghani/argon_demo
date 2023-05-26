@@ -1,3 +1,4 @@
+import 'package:argon_demo/core/dbService/db.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -71,6 +72,13 @@ class _HomeScreenState extends State<HomeScreen> {
         //       },
         //       icon: Icon(Icons.abc))
         // ],
+        actions: [
+          IconButton(
+              onPressed: () async {
+                await DB().deleteEverything();
+              },
+              icon: Icon(Icons.abc))
+        ],
       ),
       body: Obx(
         () => kHomeController.mainLoader.value
